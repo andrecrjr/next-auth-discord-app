@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// This model defines the Account table used by the Prisma adapter
+model Account {
+  id Int @id @default(autoincrement()) // O id do usuário gerado pelo Prisma
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id Int @id @default(autoincrement())
+  userId       Int
+  expires      DateTime
+  sessionToken String   @unique
+  accessToken  String?   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// You can add more models here as needed
+model User {
+  id Int @id @default(autoincrement()) // O id do usuário gerado pelo Prisma
+  discordId String? @unique // O id do usuário no Discord  username String // O nome de usuário no Discord
+  name String
+  avatar String? // O url do avatar do usuário no Discord
+  image String? // O url do avatar do usuário no Discord
+  email String? @unique // O email do usuário no Discord
+  verified Boolean? // Se o usuário verificou o email no Discord
+  emailVerified String?
+  locale String? // A localização do usuário no Discord
+  mfaEnabled Boolean? // Se o usuário habilitou a autenticação de dois fatores no Discord
+  accessToken String? // O token de acesso do usuário no Discord
+  refreshToken String? // O token de atualização do usuário no Discord
+  accessTokenExpires DateTime? // A data de expiração do token de acesso do usuário no Discord
+  createdAt DateTime @default(now()) // A data de criação do usuário no Prisma
+  updatedAt DateTime @updatedAt // A data de atualização do usuário no Prisma
+  accounts Account[]
+  sessions Session[]
+ }
